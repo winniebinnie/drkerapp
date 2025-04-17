@@ -1,32 +1,74 @@
+import 'package:drkerapp/pages/search_page.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:html/parser.dart' as html_parser;
+import 'dart:convert';
+import 'read_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _currentIndex = 0;
+
+  final List<Widget> _screens = [
+    const ExplorePage(),
+    ReadPage(),
+    const SearchPage(),
+    Center(child: Text('Search Page')), // Placeholder
+    Center(child: Text('Profile Page')), // Placeholder
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FB),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTopBar(),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _buildBlogSection(),
-                    _buildYouTubeSection(),
-                    _buildLibrarySection(),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+      body: SafeArea(child: _screens[_currentIndex]),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        selectedItemColor: const Color(0xFF006FFD),
+        unselectedItemColor: const Color(0xFF71727A),
+        type: BottomNavigationBarType.fixed,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
+          BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Read'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
       ),
-      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+}
+
+class ExplorePage extends StatelessWidget {
+  const ExplorePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildTopBar(),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildBlogSection(),
+                _buildYouTubeSection(),
+                _buildLibrarySection(),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -36,7 +78,6 @@ class HomePage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Search Bar
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -70,7 +111,6 @@ class HomePage extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          // Menu Icon
           IconButton(
             icon: const Icon(Icons.menu),
             onPressed: () {
@@ -83,71 +123,60 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildBlogSection() {
-    return Container(
-      width: double.infinity,
-      height: 300, // Fixed height
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEAF2FF),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'โพสต์ล่าสุดใน DrKerBlog',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-              color: Color(0xFF1F2024),
+    return FutureBuilder<String>(
+      future: BlogService.fetchLatestBlogPost(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: CircularProgressIndicator(),
+          );
+        } else if (snapshot.hasError) {
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text('เกิดข้อผิดพลาดในการโหลดบทความ: \${snapshot.error}'),
+          );
+        } else {
+          return Container(
+            width: double.infinity,
+            height: 300,
+            padding: const EdgeInsets.all(16),
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEAF2FF),
+              borderRadius: BorderRadius.circular(12),
             ),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: SingleChildScrollView(
-              child: const Text(
-                '''3 ข้อล้ำลึก ใน สุภาษิต 20
-
-คน​เกียจ​คร้าน​ไม่​ไถ​นา​ใน​หน้า​นา
-พอถึงฤดู​เกี่ยว ​เขา​จะ​มอง​หา​พืช​ผล​ แต่​ไม่​พบ​อะไร​เลย (ข้อ 4)
-ถ้าไม่หว่าน ก็จะไม่ได้เก็บเกี่ยว
-
-วันนี้ ถ้าเราไม่ลงทุนในฝ่ายวิญญาณ
-เมื่อวันแห่งการให้บำเหน็จมาถึง ไม่ว่าเราจะพยายามมองหาเพียงใด
-อาจไม่พบบำเหน็จเลยก็เป็นได้
-[อยากได้รับผลในฝ่ายวิญญาณ ต้องลงทุนในฝ่ายวิญญาณ]
-
-แผน​งาน​ของคนคนเดียว ย่อมมีช่องโหว่มาก
-แต่โดยการรับฟัง​คำ​แนะ​นำ คำชี้แนะ แผนงานนั้นจะรัดกุมขึ้น (ข้อ 18)
-
-วันนี้ แผนงานของความคิดของเรา ย่อมมีช่องโหว่
-แต่โดยการพึ่งพาพระคำของพระเจ้า มาเป็นแนวทางในการเลือกตัดสินใจ
-ย่อมทำให้แผนงานนั้นเกิดผลดี อย่างงดงาม
-[แผนงานที่สอดคล้องกับพระคำของพระเจ้า จะเกิดผลเป็นพร]
-
-มร​ดก​ที่​ได้​มา​อย่าง​ชิง​สุก​ก่อน​ห่าม ที่​สุด​จะไม่​เป็น​ผลดี (ข้อ 21)
-แม้มรดกเป็นสิ่งดี ที่ในที่สุดก็จะได้รับอยู่แล้ว
-แต่การได้รับก่อนเวลาอันควร กลับไม่เป็นผลดี
-
-วันนี้ การที่พระเจ้ายังไม่ได้ประทานบางสิ่งแก่เรา
-เพราะพระเจ้ามีเวลาที่ดีที่สุดสำหรับเรา
-การเร่งรีบอยากได้รับ ในสิ่งที่พระเจ้าเห็นว่า ยังไม่ควรจะได้รับ
-จะสร้างปัญหาให้เกิดขึ้นในชีวิต
-[พระเจ้ามีเวลาที่ดีที่สุด ที่จะให้เราได้รับสิ่งดีที่ทรงเตรียมไว้สำหรับเรา]''',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF494A50),
-                  height: 1.5,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'โพสต์ล่าสุดใน DrKerBlog',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: Color(0xFF1F2024),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Text(
+                      snapshot.data ?? '',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF494A50),
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
+          );
+        }
+      },
     );
   }
-
 
   Widget _buildYouTubeSection() {
     return _buildHorizontalCardList(
@@ -232,10 +261,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildVideoCard({
-    required String title,
-    required String imageUrl,
-  }) {
+  Widget _buildVideoCard({required String title, required String imageUrl}) {
     return Container(
       width: 213,
       decoration: BoxDecoration(
@@ -274,19 +300,27 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildBottomNav() {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      selectedItemColor: const Color(0xFF006FFD),
-      unselectedItemColor: const Color(0xFF71727A),
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
-        BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Read'),
-        BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-      ],
-    );
+class BlogService {
+  static const String apiUrl = 'https://drkerministry.home.blog/wp-json/wp/v2/posts';
+
+  static Future<String> fetchLatestBlogPost() async {
+    final response = await http.get(Uri.parse(apiUrl));
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      if (data.isNotEmpty) {
+        final post = data[0];
+        final title = post['title']['rendered'];
+        final content = post['content']['rendered'];
+        return '\${title}\n\n\${_stripHtml(content)}';
+      }
+    }
+    throw Exception('ไม่สามารถโหลดโพสต์ล่าสุดได้');
+  }
+
+  static String _stripHtml(String htmlContent) {
+    final document = html_parser.parse(htmlContent);
+    return document.body?.text.trim() ?? '';
   }
 }
