@@ -1,7 +1,6 @@
-import 'package:drkerapp/pages/search_page.dart';
 import 'package:flutter/material.dart';
+import 'package:drkerapp/pages/search_page.dart';
 import 'package:http/http.dart' as http;
-import 'package:html/parser.dart' as html_parser;
 import 'dart:convert';
 import 'read_page.dart';
 
@@ -61,9 +60,9 @@ class ExplorePage extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                _buildBlogSection(),
                 _buildYouTubeSection(),
                 _buildLibrarySection(),
+                _buildBlogSection(),
               ],
             ),
           ),
@@ -122,9 +121,9 @@ class ExplorePage extends StatelessWidget {
     );
   }
 
-  Widget _buildBlogSection() {
-    return FutureBuilder<String>(
-      future: BlogService.fetchLatestBlogPost(),
+  Widget _buildYouTubeSection() {
+    return FutureBuilder<List<VideoItem>>(
+      future: YouTubeService.fetchLatestVideos('UC2L5vHO7aMZQFQGHNirMR3A'),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -134,94 +133,60 @@ class ExplorePage extends StatelessWidget {
         } else if (snapshot.hasError) {
           return Padding(
             padding: const EdgeInsets.all(16),
-            child: Text('เกิดข้อผิดพลาดในการโหลดบทความ: \${snapshot.error}'),
+            child: Text('Error: \${snapshot.error}'),
           );
         } else {
-          return Container(
-            width: double.infinity,
-            height: 300,
-            padding: const EdgeInsets.all(16),
-            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAF2FF),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'โพสต์ล่าสุดใน DrKerBlog',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    color: Color(0xFF1F2024),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Text(
-                      snapshot.data ?? '',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF494A50),
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
+          final cards = snapshot.data!.map((video) => _buildVideoCard(title: video.title, imageUrl: video.thumbnailUrl)).toList();
+          return _buildHorizontalCardList(title: 'DrKerYouTube', cards: cards);
         }
       },
     );
   }
 
-  Widget _buildYouTubeSection() {
-    return _buildHorizontalCardList(
-      title: 'DrKerYouTube',
-      cards: [
-        _buildVideoCard(
-          title: 'พระธรรมกันดารวิถี บทที่ 2',
-          imageUrl: 'https://placehold.co/200x112',
-        ),
-        _buildVideoCard(
-          title: 'คำเทศนา พระคุณอันยิ่งใหญ่',
-          imageUrl: 'https://placehold.co/200x112',
-        ),
-        _buildVideoCard(
-          title: 'พระธรรมโยบ บทที่ 19',
-          imageUrl: 'https://placehold.co/200x112',
-        ),
-      ],
-    );
-  }
-
   Widget _buildLibrarySection() {
-    return _buildHorizontalCardList(
-      title: 'DrKerLibrary',
-      cards: [
-        _buildVideoCard(
-          title: '“ไม้ทั้งท่อนที่อยู่ในตา” หมายถึงอะไร?',
-          imageUrl: 'https://placehold.co/200x112',
-        ),
-        _buildVideoCard(
-          title: 'ความถ่อมตัว คืออะไร?',
-          imageUrl: 'https://placehold.co/198x111',
-        ),
-        _buildVideoCard(
-          title: 'จะแยกแยะได้อย่างไรว่า...',
-          imageUrl: 'https://placehold.co/200x112',
-        ),
-      ],
+    return FutureBuilder<List<VideoItem>>(
+      future: YouTubeService.fetchLatestVideos('UCcrv2VvNATtX8AV2XpVZl1A'),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: CircularProgressIndicator(),
+          );
+        } else if (snapshot.hasError) {
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text('Error: \${snapshot.error}'),
+          );
+        } else {
+          final cards = snapshot.data!.map((video) => _buildVideoCard(title: video.title, imageUrl: video.thumbnailUrl)).toList();
+          return _buildHorizontalCardList(title: 'DrKerLibrary', cards: cards);
+        }
+      },
     );
   }
 
-  Widget _buildHorizontalCardList({
-    required String title,
-    required List<Widget> cards,
-  }) {
+  Widget _buildBlogSection() {
+    // Placeholder for dynamic blog section
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Text(
+            'Latest Blog Posts',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Blog feature coming soon...',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHorizontalCardList({required String title, required List<Widget> cards}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: Column(
@@ -232,15 +197,10 @@ class ExplorePage extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w700)),
+                Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
                 const Text(
                   'See more',
-                  style: TextStyle(
-                      color: Color(0xFF006FFD),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600),
+                  style: TextStyle(color: Color(0xFF006FFD), fontSize: 12, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -302,25 +262,38 @@ class ExplorePage extends StatelessWidget {
   }
 }
 
-class BlogService {
-  static const String apiUrl = 'https://drkerministry.home.blog/wp-json/wp/v2/posts';
+class YouTubeService {
+  static const String apiKey = 'YOUR_YOUTUBE_API_KEY';
 
-  static Future<String> fetchLatestBlogPost() async {
-    final response = await http.get(Uri.parse(apiUrl));
+  static Future<List<VideoItem>> fetchLatestVideos(String channelId) async {
+    final url = Uri.parse(
+      'https://www.googleapis.com/youtube/v3/search?key=\$apiKey&channelId=\$channelId&part=snippet,id&order=date&maxResults=5',
+    );
+
+    final response = await http.get(url);
+
     if (response.statusCode == 200) {
-      final List data = jsonDecode(response.body);
-      if (data.isNotEmpty) {
-        final post = data[0];
-        final title = post['title']['rendered'];
-        final content = post['content']['rendered'];
-        return '\${title}\n\n\${_stripHtml(content)}';
-      }
-    }
-    throw Exception('ไม่สามารถโหลดโพสต์ล่าสุดได้');
-  }
+      final json = jsonDecode(response.body);
+      final List items = json['items'];
 
-  static String _stripHtml(String htmlContent) {
-    final document = html_parser.parse(htmlContent);
-    return document.body?.text.trim() ?? '';
+      return items
+          .where((item) => item['id']['kind'] == 'youtube#video')
+          .map<VideoItem>((item) => VideoItem(
+        title: item['snippet']['title'],
+        thumbnailUrl: item['snippet']['thumbnails']['high']['url'],
+        videoId: item['id']['videoId'],
+      ))
+          .toList();
+    } else {
+      throw Exception('Failed to load videos');
+    }
   }
+}
+
+class VideoItem {
+  final String title;
+  final String thumbnailUrl;
+  final String videoId;
+
+  VideoItem({required this.title, required this.thumbnailUrl, required this.videoId});
 }
