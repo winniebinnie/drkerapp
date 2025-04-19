@@ -60,9 +60,9 @@ class ExplorePage extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
+                _buildBlogSection(),
                 _buildYouTubeSection(),
                 _buildLibrarySection(),
-                _buildBlogSection(),
               ],
             ),
           ),
@@ -123,7 +123,7 @@ class ExplorePage extends StatelessWidget {
 
   Widget _buildYouTubeSection() {
     return FutureBuilder<List<VideoItem>>(
-      future: YouTubeService.fetchLatestVideos('UC2L5vHO7aMZQFQGHNirMR3A'),
+      future: YouTubeService.fetchLatestVideos('UCkcmd1DLH_6kpc9yoBqO9wg'),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -133,10 +133,12 @@ class ExplorePage extends StatelessWidget {
         } else if (snapshot.hasError) {
           return Padding(
             padding: const EdgeInsets.all(16),
-            child: Text('Error: \${snapshot.error}'),
+            child: Text('Error: ${snapshot.error}'),
           );
         } else {
-          final cards = snapshot.data!.map((video) => _buildVideoCard(title: video.title, imageUrl: video.thumbnailUrl)).toList();
+          final cards = snapshot.data!.map((video) =>
+              _buildVideoCard(title: video.title, imageUrl: video.thumbnailUrl))
+              .toList();
           return _buildHorizontalCardList(title: 'DrKerYouTube', cards: cards);
         }
       },
@@ -145,7 +147,7 @@ class ExplorePage extends StatelessWidget {
 
   Widget _buildLibrarySection() {
     return FutureBuilder<List<VideoItem>>(
-      future: YouTubeService.fetchLatestVideos('UCcrv2VvNATtX8AV2XpVZl1A'),
+      future: YouTubeService.fetchLatestVideos('UCHwMNHKk2uzTEENHnRrs9Ew'),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -155,10 +157,12 @@ class ExplorePage extends StatelessWidget {
         } else if (snapshot.hasError) {
           return Padding(
             padding: const EdgeInsets.all(16),
-            child: Text('Error: \${snapshot.error}'),
+            child: Text('Error: ${snapshot.error}'),
           );
         } else {
-          final cards = snapshot.data!.map((video) => _buildVideoCard(title: video.title, imageUrl: video.thumbnailUrl)).toList();
+          final cards = snapshot.data!.map((video) =>
+              _buildVideoCard(title: video.title, imageUrl: video.thumbnailUrl))
+              .toList();
           return _buildHorizontalCardList(title: 'DrKerLibrary', cards: cards);
         }
       },
@@ -166,23 +170,46 @@ class ExplorePage extends StatelessWidget {
   }
 
   Widget _buildBlogSection() {
-    // Placeholder for dynamic blog section
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text(
-            'Latest Blog Posts',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Blog feature coming soon...',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-        ],
-      ),
+    return FutureBuilder<List<BlogItem>>(
+      future: BlogService.fetchLatestPosts(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: CircularProgressIndicator(),
+          );
+        } else if (snapshot.hasError) {
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text('Error loading blog posts.'),
+          );
+        } else if (snapshot.data!.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  'Latest Blog Posts',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Blog feature coming soon...',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return _buildHorizontalCardList(
+            title: 'Latest Blog Posts',
+            cards: snapshot.data!
+                .map((blog) => _buildVideoCard(title: blog.title, imageUrl: blog.thumbnailUrl))
+                .toList(),
+          );
+        }
+      },
     );
   }
 
@@ -263,11 +290,11 @@ class ExplorePage extends StatelessWidget {
 }
 
 class YouTubeService {
-  static const String apiKey = 'YOUR_YOUTUBE_API_KEY';
+  static const String apiKey = 'AIzaSyABnUHeSMZtrTAJCgWhpn-woVWehjIBolA';
 
   static Future<List<VideoItem>> fetchLatestVideos(String channelId) async {
     final url = Uri.parse(
-      'https://www.googleapis.com/youtube/v3/search?key=\$apiKey&channelId=\$channelId&part=snippet,id&order=date&maxResults=5',
+      'https://www.googleapis.com/youtube/v3/search?key=$apiKey&channelId=$channelId&part=snippet,id&order=date&maxResults=5',
     );
 
     final response = await http.get(url);
@@ -285,7 +312,7 @@ class YouTubeService {
       ))
           .toList();
     } else {
-      throw Exception('Failed to load videos');
+      throw Exception('Failed to load videos: ${response.body}');
     }
   }
 }
@@ -296,4 +323,18 @@ class VideoItem {
   final String videoId;
 
   VideoItem({required this.title, required this.thumbnailUrl, required this.videoId});
+}
+
+class BlogItem {
+  final String title;
+  final String thumbnailUrl;
+
+  BlogItem({required this.title, required this.thumbnailUrl});
+}
+
+class BlogService {
+  static Future<List<BlogItem>> fetchLatestPosts() async {
+    // Simulating no data; when ready replace with real fetching logic.
+    return Future.delayed(const Duration(seconds: 1), () => []);
+  }
 }
