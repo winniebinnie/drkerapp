@@ -1,104 +1,119 @@
 import 'package:flutter/material.dart';
+import 'package:drkerapp/utility/constants.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class SearchPage extends StatelessWidget {
+class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
+
+  @override
+  State<SearchPage> createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  List<VideoItem> searchResults = [];
+  bool isLoading = false;
+  final TextEditingController _controller = TextEditingController();
+
+  Future<void> _searchContent(String query) async {
+    setState(() => isLoading = true);
+    final blogResults = await BlogService.searchBlog(query);
+    final youTubeResults1 = await YouTubeService.searchYouTube(query, AppConstants.drKerYouTubeChannelId);
+    final youTubeResults2 = await YouTubeService.searchYouTube(query, AppConstants.drKerLibraryChannelId);
+
+    setState(() {
+      searchResults = [...blogResults, ...youTubeResults1, ...youTubeResults2];
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'ค้นหา',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
+        title: const Text('ค้นหา', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF006FFD),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildSearchBar(),
-          const SizedBox(height: 16),
-          _buildResultCard(title: 'Amazing Shoes', price: '€ 12.00'),
-          _buildResultCard(title: 'Fabulous Shoes', price: '€ 15.00'),
-          _buildResultCard(title: 'Fantastic Shoes', price: '€ 15.00'),
-          _buildResultCard(title: 'Spectacular Shoes', price: '€ 12.00'),
-          _buildResultCard(title: 'Stunning Shoes', price: '€ 12.00'),
-          _buildResultCard(title: 'Wonderful Shoes', price: '€ 15.00'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FD),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        children: const [
-          Icon(Icons.search, color: Color(0xFF2E3036), size: 16),
-          SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              'Shoes',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF1F2024),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                hintText: 'ค้นหาคอนเทนต์...',
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () => _searchContent(_controller.text),
+                ),
+                filled: true,
+                fillColor: const Color(0xFFF7F8FD),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            isLoading
+                ? const CircularProgressIndicator()
+                : Expanded(
+              child: ListView.builder(
+                itemCount: searchResults.length,
+                itemBuilder: (context, index) {
+                  final item = searchResults[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: ListTile(
+                      leading: Image.network(item.thumbnailUrl, width: 100, fit: BoxFit.cover),
+                      title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildResultCard({required String title, required String price}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FD),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 120,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAF2FF),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Center(
-              child: Icon(Icons.image, size: 32, color: Color(0xFFB3DAFF)),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF1F2024),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            price,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2024),
-            ),
-          ),
-        ],
-      ),
+class VideoItem {
+  final String title;
+  final String thumbnailUrl;
+  final String? videoId; // optional for blog items
+
+  VideoItem({required this.title, required this.thumbnailUrl, this.videoId});
+}
+
+class YouTubeService {
+  static Future<List<VideoItem>> searchYouTube(String query, String channelId) async {
+    final url = Uri.parse(
+      'https://www.googleapis.com/youtube/v3/search?key=${AppConstants.youtubeApiKey}&channelId=$channelId&q=$query&part=snippet&type=video&maxResults=10',
     );
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List items = jsonDecode(response.body)['items'];
+      return items.map((item) => VideoItem(
+        title: item['snippet']['title'],
+        thumbnailUrl: item['snippet']['thumbnails']['high']['url'],
+        videoId: item['id']['videoId'],
+      )).toList();
+    } else {
+      throw Exception('Failed to search YouTube');
+    }
+  }
+}
+
+class BlogService {
+  static Future<List<VideoItem>> searchBlog(String query) async {
+    // Replace this with your actual blog search logic
+    // Returning dummy data for demo purposes
+    await Future.delayed(const Duration(seconds: 1));
+    return [
+      VideoItem(
+        title: 'ผลการค้นหาบล็อก: $query',
+        thumbnailUrl: 'https://via.placeholder.com/150x100',
+      ),
+    ];
   }
 }
