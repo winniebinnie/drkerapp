@@ -1,5 +1,3 @@
-// lib/pages/explore_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -10,22 +8,26 @@ class ExplorePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildTopBar(),
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildBlogSection(),
-                _buildYouTubeSection(),
-                _buildLibrarySection(),
-              ],
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTopBar(),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildBlogSection(),
+                    _buildYouTubeSection(),
+                    _buildLibrarySection(),
+                  ],
+                ),
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -228,7 +230,6 @@ class ExplorePage extends StatelessWidget {
   }
 }
 
-// YouTube API Service
 class YouTubeService {
   static Future<List<VideoItem>> fetchLatestVideos(String channelId) async {
     final url = Uri.parse(
@@ -272,7 +273,6 @@ class BlogItem {
 
 class BlogService {
   static Future<List<BlogItem>> fetchLatestPosts() async {
-    // Placeholder, implement WordPress blog fetching logic here
     return Future.delayed(const Duration(seconds: 1), () => []);
   }
 }
