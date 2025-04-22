@@ -1,51 +1,9 @@
+// lib/pages/explore_page.dart
+
 import 'package:flutter/material.dart';
-import 'package:drkerapp/pages/search_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'read_page.dart';
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  int _currentIndex = 0;
-
-  final List<Widget> _screens = [
-    const ExplorePage(),
-    ReadPage(),
-    const SearchPage(),
-    Center(child: Text('Search Page')), // Placeholder
-    Center(child: Text('Profile Page')), // Placeholder
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(child: _screens[_currentIndex]),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        selectedItemColor: const Color(0xFF006FFD),
-        unselectedItemColor: const Color(0xFF71727A),
-        type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
-          BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Read'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-      ),
-    );
-  }
-}
+import 'package:drkerapp/utility/constants.dart';
 
 class ExplorePage extends StatelessWidget {
   const ExplorePage({super.key});
@@ -112,9 +70,7 @@ class ExplorePage extends StatelessWidget {
           const SizedBox(width: 12),
           IconButton(
             icon: const Icon(Icons.menu),
-            onPressed: () {
-              print("Menu icon tapped");
-            },
+            onPressed: () => print("Menu icon tapped"),
           ),
         ],
       ),
@@ -123,7 +79,7 @@ class ExplorePage extends StatelessWidget {
 
   Widget _buildYouTubeSection() {
     return FutureBuilder<List<VideoItem>>(
-      future: YouTubeService.fetchLatestVideos('UCkcmd1DLH_6kpc9yoBqO9wg'),
+      future: YouTubeService.fetchLatestVideos(AppConstants.drKerYouTubeChannelId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -137,8 +93,7 @@ class ExplorePage extends StatelessWidget {
           );
         } else {
           final cards = snapshot.data!.map((video) =>
-              _buildVideoCard(title: video.title, imageUrl: video.thumbnailUrl))
-              .toList();
+              _buildVideoCard(title: video.title, imageUrl: video.thumbnailUrl)).toList();
           return _buildHorizontalCardList(title: 'DrKerYouTube', cards: cards);
         }
       },
@@ -147,7 +102,7 @@ class ExplorePage extends StatelessWidget {
 
   Widget _buildLibrarySection() {
     return FutureBuilder<List<VideoItem>>(
-      future: YouTubeService.fetchLatestVideos('UCHwMNHKk2uzTEENHnRrs9Ew'),
+      future: YouTubeService.fetchLatestVideos(AppConstants.drKerLibraryChannelId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -161,8 +116,7 @@ class ExplorePage extends StatelessWidget {
           );
         } else {
           final cards = snapshot.data!.map((video) =>
-              _buildVideoCard(title: video.title, imageUrl: video.thumbnailUrl))
-              .toList();
+              _buildVideoCard(title: video.title, imageUrl: video.thumbnailUrl)).toList();
           return _buildHorizontalCardList(title: 'DrKerLibrary', cards: cards);
         }
       },
@@ -179,35 +133,20 @@ class ExplorePage extends StatelessWidget {
             child: CircularProgressIndicator(),
           );
         } else if (snapshot.hasError) {
-          return Padding(
-            padding: const EdgeInsets.all(16),
+          return const Padding(
+            padding: EdgeInsets.all(16),
             child: Text('Error loading blog posts.'),
           );
         } else if (snapshot.data!.isEmpty) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Latest Blog Posts',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Blog feature coming soon...',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
+          return const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Text('Blog feature coming soon...'),
           );
         } else {
-          return _buildHorizontalCardList(
-            title: 'Latest Blog Posts',
-            cards: snapshot.data!
-                .map((blog) => _buildVideoCard(title: blog.title, imageUrl: blog.thumbnailUrl))
-                .toList(),
-          );
+          final cards = snapshot.data!
+              .map((blog) => _buildVideoCard(title: blog.title, imageUrl: blog.thumbnailUrl))
+              .toList();
+          return _buildHorizontalCardList(title: 'Latest Blog Posts', cards: cards);
         }
       },
     );
@@ -289,12 +228,11 @@ class ExplorePage extends StatelessWidget {
   }
 }
 
+// YouTube API Service
 class YouTubeService {
-  static const String apiKey = 'AIzaSyABnUHeSMZtrTAJCgWhpn-woVWehjIBolA';
-
   static Future<List<VideoItem>> fetchLatestVideos(String channelId) async {
     final url = Uri.parse(
-      'https://www.googleapis.com/youtube/v3/search?key=$apiKey&channelId=$channelId&part=snippet,id&order=date&maxResults=5',
+      'https://www.googleapis.com/youtube/v3/search?key=${AppConstants.youtubeApiKey}&channelId=$channelId&part=snippet,id&order=date&maxResults=5',
     );
 
     final response = await http.get(url);
@@ -334,7 +272,7 @@ class BlogItem {
 
 class BlogService {
   static Future<List<BlogItem>> fetchLatestPosts() async {
-    // Simulating no data; when ready replace with real fetching logic.
+    // Placeholder, implement WordPress blog fetching logic here
     return Future.delayed(const Duration(seconds: 1), () => []);
   }
 }
