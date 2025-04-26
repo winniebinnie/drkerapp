@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:drkerapp/utility/constants.dart';
+import 'package:drkerapp/widgets/video_card.dart';
+import 'package:drkerapp/widgets/horizontal_card_list.dart';
+
 
 class ExplorePage extends StatelessWidget {
   const ExplorePage({super.key});
@@ -95,8 +98,8 @@ class ExplorePage extends StatelessWidget {
           );
         } else {
           final cards = snapshot.data!.map((video) =>
-              _buildVideoCard(title: video.title, imageUrl: video.thumbnailUrl)).toList();
-          return _buildHorizontalCardList(title: 'DrKerYouTube', cards: cards);
+              VideoCard(title: video.title, imageUrl: video.thumbnailUrl)).toList();
+          return HorizontalCardList(title: 'DrKerYouTube', cards: cards);
         }
       },
     );
@@ -118,8 +121,8 @@ class ExplorePage extends StatelessWidget {
           );
         } else {
           final cards = snapshot.data!.map((video) =>
-              _buildVideoCard(title: video.title, imageUrl: video.thumbnailUrl)).toList();
-          return _buildHorizontalCardList(title: 'DrKerLibrary', cards: cards);
+              VideoCard(title: video.title, imageUrl: video.thumbnailUrl)).toList();
+          return HorizontalCardList(title: 'DrKerLibrary', cards: cards);
         }
       },
     );
@@ -146,86 +149,11 @@ class ExplorePage extends StatelessWidget {
           );
         } else {
           final cards = snapshot.data!
-              .map((blog) => _buildVideoCard(title: blog.title, imageUrl: blog.thumbnailUrl))
+              .map((blog) => VideoCard(title: blog.title, imageUrl: blog.thumbnailUrl))
               .toList();
-          return _buildHorizontalCardList(title: 'Latest Blog Posts', cards: cards);
+          return HorizontalCardList(title: 'Latest Blog Posts', cards: cards);
         }
       },
-    );
-  }
-
-  Widget _buildHorizontalCardList({required String title, required List<Widget> cards}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-                const Text(
-                  'See more',
-                  style: TextStyle(color: Color(0xFF006FFD), fontSize: 12, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 220,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: cards.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) => cards[index],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVideoCard({required String title, required String imageUrl}) {
-    return Container(
-      width: 213,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FD),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
-            ),
-            child: Image.network(
-              imageUrl,
-              width: double.infinity,
-              height: 120,
-              fit: BoxFit.cover,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              title,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1F2024),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
