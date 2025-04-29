@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:drkerapp/pages/explore_page.dart';
-import 'package:drkerapp/pages/read_page.dart';       // <-- add this
-import 'package:drkerapp/pages/search_page.dart';     // <-- add this
+import 'package:drkerapp/pages/explore/explore_page.dart';
+import 'package:drkerapp/pages/read/read_page.dart';       // <-- add this
+import 'package:drkerapp/pages/search/search_page.dart';     // <-- add this
 
 void main() {
   runApp(const MyApp());
