@@ -4,11 +4,7 @@ class HorizontalCardList extends StatelessWidget {
   final String title;
   final List<Widget> cards;
 
-  const HorizontalCardList({
-    super.key,
-    required this.title,
-    required this.cards,
-  });
+  const HorizontalCardList({required this.title, required this.cards, super.key});
 
   @override
   Widget build(BuildContext context) {
