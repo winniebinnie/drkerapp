@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
 import 'package:drkerapp/utility/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:drkerapp/services/youtube_service.dart';
+import 'package:drkerapp/models/video_item.dart';
 
 
 class SearchPage extends StatelessWidget {
@@ -107,35 +106,6 @@ class DrKerSearchDelegate extends SearchDelegate<String> {
   }
 }
 
-// Data model
-class VideoItem {
-  final String title;
-  final String thumbnailUrl;
-  final String? videoId;
-
-  VideoItem({required this.title, required this.thumbnailUrl, this.videoId});
-}
-
-// YouTube service
-class YouTubeService {
-  static Future<List<VideoItem>> searchYouTube(String query, String channelId) async {
-    final url = Uri.parse(
-      'https://www.googleapis.com/youtube/v3/search?key=${AppConstants.youtubeApiKey}&channelId=$channelId&q=$query&part=snippet&type=video&maxResults=10',
-    );
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final List items = jsonDecode(response.body)['items'];
-      return items.map((item) => VideoItem(
-        title: item['snippet']['title'],
-        thumbnailUrl: item['snippet']['thumbnails']['high']['url'],
-        videoId: item['id']['videoId'],
-      )).toList();
-    } else {
-      throw Exception('Failed to search YouTube');
-    }
-  }
-}
 
 // Blog service (mocked)
 class BlogService {
