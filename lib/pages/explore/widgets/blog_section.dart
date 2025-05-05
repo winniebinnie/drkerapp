@@ -1,8 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:drkerapp/models/blog_item.dart';
-import 'package:drkerapp/services/blog_service.dart';
 import 'package:drkerapp/widgets/video_card.dart';
 import 'package:drkerapp/widgets/horizontal_card_list.dart';
+
+// Mock BlogItem model (if not already imported)
+class BlogItem {
+  final String title;
+  final String thumbnailUrl;
+  final String link;
+
+  BlogItem({
+    required this.title,
+    required this.thumbnailUrl,
+    required this.link,
+  });
+}
+
+// Temporary mock service
+class BlogService {
+  static Future<List<BlogItem>> fetchLatestPosts() async {
+    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
+    return [
+      BlogItem(
+        title: 'Sample Blog Post 1',
+        thumbnailUrl: 'https://via.placeholder.com/150',
+        link: 'https://example.com/post1',
+      ),
+      BlogItem(
+        title: 'Sample Blog Post 2',
+        thumbnailUrl: 'https://via.placeholder.com/150',
+        link: 'https://example.com/post2',
+      ),
+    ];
+  }
+}
+
+// EXISITING CODE
 
 class BlogSection extends StatelessWidget {
   const BlogSection({super.key});
