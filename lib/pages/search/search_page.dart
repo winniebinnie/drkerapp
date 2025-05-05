@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:drkerapp/utility/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:drkerapp/services/youtube_service.dart';
-import 'package:drkerapp/models/video_item.dart';
+import 'package:drkerapp/models/search_result_item.dart';
+import 'package:drkerapp/services/blog_service.dart';
 
 
 class SearchPage extends StatelessWidget {
@@ -12,7 +13,7 @@ class SearchPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Explore'),
+        title: const Text('Search'),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -22,24 +23,41 @@ class SearchPage extends StatelessWidget {
           ),
         ],
       ),
-      body: const Center(child: Text('Explore content here...')),
+      body: const Center(child: Text('Search content here...')),
     );
   }
 }
 
-// The SearchDelegate class
 class DrKerSearchDelegate extends SearchDelegate<String> {
-  List<VideoItem> searchResults = [];
+  List<SearchResultItem> searchResults = [];
   bool isLoading = false;
 
-  Future<void> _searchContent(String query) async {
-    isLoading = true;
-    final blogResults = await BlogService.searchBlog(query);
+  Future<List<SearchResultItem>> _searchContent(String query) async {
+    final blogItems = await BlogService.searchBlog(query);
     final youTubeResults1 = await YouTubeService.searchYouTube(query, AppConstants.drKerYouTubeChannelId);
     final youTubeResults2 = await YouTubeService.searchYouTube(query, AppConstants.drKerLibraryChannelId);
-    searchResults = [...blogResults, ...youTubeResults1, ...youTubeResults2];
-    isLoading = false;
+
+    return [
+      ...blogItems.map((b) => SearchResultItem(
+        title: b.title,
+        type: SearchResultType.blog,
+        blogLink: b.link,
+      )),
+      ...youTubeResults1.map((v) => SearchResultItem(
+        title: v.title,
+        thumbnailUrl: v.thumbnailUrl,
+        type: SearchResultType.video,
+        videoId: v.videoId,
+      )),
+      ...youTubeResults2.map((v) => SearchResultItem(
+        title: v.title,
+        thumbnailUrl: v.thumbnailUrl,
+        type: SearchResultType.video,
+        videoId: v.videoId,
+      )),
+    ];
   }
+
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -53,45 +71,45 @@ class DrKerSearchDelegate extends SearchDelegate<String> {
 
   @override
   Widget buildResults(BuildContext context) {
-    return FutureBuilder(
+    return FutureBuilder<List<SearchResultItem>>(
       future: _searchContent(query),
       builder: (context, snapshot) {
-        if (isLoading) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (searchResults.isEmpty) {
+        if (snapshot.hasError) {
+          return Center(child: Text('เกิดข้อผิดพลาด: ${snapshot.error}'));
+        }
+        final results = snapshot.data ?? [];
+
+        if (results.isEmpty) {
           return const Center(child: Text('ไม่พบผลลัพธ์'));
         }
+
         return ListView.builder(
-          itemCount: searchResults.length,
+          itemCount: results.length,
           itemBuilder: (context, index) {
-            final item = searchResults[index];
+            final item = results[index];
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: ListTile(
-                leading: Image.network(item.thumbnailUrl, width: 100, fit: BoxFit.cover),
+                  leading: item.thumbnailUrl != null
+                      ? Image.network(item.thumbnailUrl!, width: 100, fit: BoxFit.cover)
+                      : null,
                 title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
                 onTap: () async {
-                  if (item.videoId != null) {
-                    final url = 'https://www.youtube.com/watch?v=${item.videoId}';
-                    final uri = Uri.parse(url);
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri, mode: LaunchMode.platformDefault);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Could not open YouTube')),
-                      );
-                    }
+                  final uri = item.type == SearchResultType.video
+                      ? Uri.parse('https://www.youtube.com/watch?v=${item.videoId}')
+                      : Uri.parse(item.blogLink!);
+
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.platformDefault);
                   } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BlogDetailPage(title: item.title),
-                      ),
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('ไม่สามารถเปิดลิงก์ได้')),
                     );
                   }
                 },
-
               ),
             );
           },
@@ -100,37 +118,9 @@ class DrKerSearchDelegate extends SearchDelegate<String> {
     );
   }
 
+
   @override
   Widget buildSuggestions(BuildContext context) {
     return const Center(child: Text('เริ่มพิมพ์เพื่อค้นหา...'));
-  }
-}
-
-
-// Blog service (mocked)
-class BlogService {
-  static Future<List<VideoItem>> searchBlog(String query) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return [
-      VideoItem(
-        title: 'ผลการค้นหาบล็อก: $query',
-        thumbnailUrl: 'https://via.placeholder.com/150x100',
-      ),
-    ];
-  }
-}
-
-// Simple blog details placeholder
-class BlogDetailPage extends StatelessWidget {
-  final String title;
-
-  const BlogDetailPage({super.key, required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Blog Detail')),
-      body: Center(child: Text('Showing blog post: $title')),
-    );
   }
 }
