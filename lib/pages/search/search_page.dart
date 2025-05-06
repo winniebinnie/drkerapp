@@ -4,6 +4,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:drkerapp/services/youtube_service.dart';
 import 'package:drkerapp/models/search_result_item.dart';
 import 'package:drkerapp/services/blog_service.dart';
+import 'package:html_unescape/html_unescape.dart';
+import 'package:drkerapp/models/video_item.dart'; // Adjust the path if needed
+
 
 
 class SearchPage extends StatelessWidget {
@@ -33,23 +36,52 @@ class DrKerSearchDelegate extends SearchDelegate<String> {
   bool isLoading = false;
 
   Future<List<SearchResultItem>> _searchContent(String query) async {
+    final unescape = HtmlUnescape();
     final blogItems = await BlogService.searchBlog(query);
     final youTubeResults1 = await YouTubeService.searchYouTube(query, AppConstants.drKerYouTubeChannelId);
     final youTubeResults2 = await YouTubeService.searchYouTube(query, AppConstants.drKerLibraryChannelId);
 
+    // Normalize query by removing normal spaces and non-breaking spaces
+    final normalizedQuery = query.replaceAll(' ', '').replaceAll(String.fromCharCode(0x00A0), '').toLowerCase();
+
+    // Decode and filter blog results
+    final filteredBlogItems = blogItems.where((b) {
+      final decodedTitle = unescape.convert(b.title);
+      final normalizedTitle = decodedTitle.replaceAll(' ', '').replaceAll(String.fromCharCode(0x00A0), '').toLowerCase();
+      return normalizedTitle.contains(normalizedQuery);
+    }).toList();
+
+    // Decode YouTube video titles
+    final decodedYouTubeResults1 = youTubeResults1.map((v) {
+      return VideoItem(
+        title: unescape.convert(v.title),
+        thumbnailUrl: v.thumbnailUrl,
+        videoId: v.videoId,
+      );
+    }).toList();
+
+
+    final decodedYouTubeResults2 = youTubeResults2.map((v) {
+      return VideoItem(
+      title: unescape.convert(v.title),
+      thumbnailUrl: v.thumbnailUrl,
+      videoId: v.videoId,
+      );
+    }).toList();
+
     return [
-      ...blogItems.map((b) => SearchResultItem(
-        title: b.title,
+      ...filteredBlogItems.map((b) => SearchResultItem(
+        title: unescape.convert(b.title),
         type: SearchResultType.blog,
         blogLink: b.link,
       )),
-      ...youTubeResults1.map((v) => SearchResultItem(
+      ...decodedYouTubeResults1.map((v) => SearchResultItem(
         title: v.title,
         thumbnailUrl: v.thumbnailUrl,
         type: SearchResultType.video,
         videoId: v.videoId,
       )),
-      ...youTubeResults2.map((v) => SearchResultItem(
+      ...decodedYouTubeResults2.map((v) => SearchResultItem(
         title: v.title,
         thumbnailUrl: v.thumbnailUrl,
         type: SearchResultType.video,
@@ -57,7 +89,6 @@ class DrKerSearchDelegate extends SearchDelegate<String> {
       )),
     ];
   }
-
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -93,9 +124,9 @@ class DrKerSearchDelegate extends SearchDelegate<String> {
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: ListTile(
-                  leading: item.thumbnailUrl != null
-                      ? Image.network(item.thumbnailUrl!, width: 100, fit: BoxFit.cover)
-                      : null,
+                leading: item.thumbnailUrl != null
+                    ? Image.network(item.thumbnailUrl!, width: 100, fit: BoxFit.cover)
+                    : null,
                 title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
                 onTap: () async {
                   final uri = item.type == SearchResultType.video
@@ -117,7 +148,6 @@ class DrKerSearchDelegate extends SearchDelegate<String> {
       },
     );
   }
-
 
   @override
   Widget buildSuggestions(BuildContext context) {
