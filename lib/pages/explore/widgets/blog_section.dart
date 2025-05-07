@@ -1,48 +1,18 @@
+import 'package:drkerapp/models/blog_item.dart';
+import 'package:drkerapp/services/blog_service.dart';
 import 'package:flutter/material.dart';
-import 'package:drkerapp/widgets/video_card.dart';
-import 'package:drkerapp/widgets/horizontal_card_list.dart';
+import 'package:drkerapp/pages/read/placeholder_blog_page.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
-// Mock BlogItem model (if not already imported)
-class BlogItem {
-  final String title;
-  final String thumbnailUrl;
-  final String link;
 
-  BlogItem({
-    required this.title,
-    required this.thumbnailUrl,
-    required this.link,
-  });
-}
-
-// Temporary mock service
-class BlogService {
-  static Future<List<BlogItem>> fetchLatestPosts() async {
-    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
-    return [
-      BlogItem(
-        title: 'Sample Blog Post 1',
-        thumbnailUrl: 'https://via.placeholder.com/150',
-        link: 'https://example.com/post1',
-      ),
-      BlogItem(
-        title: 'Sample Blog Post 2',
-        thumbnailUrl: 'https://via.placeholder.com/150',
-        link: 'https://example.com/post2',
-      ),
-    ];
-  }
-}
-
-// EXISITING CODE
 
 class BlogSection extends StatelessWidget {
   const BlogSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<BlogItem>>(
-      future: BlogService.fetchLatestPosts(),
+    return FutureBuilder<BlogItem>(
+      future: BlogService.fetchLatestPost(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -52,18 +22,62 @@ class BlogSection extends StatelessWidget {
         } else if (snapshot.hasError) {
           return const Padding(
             padding: EdgeInsets.all(16),
-            child: Text('Error loading blog posts.'),
-          );
-        } else if (snapshot.data!.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Text('Blog feature coming soon...'),
+            child: Text('Error loading latest blog post.'),
           );
         } else {
-          final cards = snapshot.data!
-              .map((blog) => VideoCard(title: blog.title, imageUrl: blog.thumbnailUrl))
-              .toList();
-          return HorizontalCardList(title: 'Latest Blog Posts', cards: cards);
+          final post = snapshot.data!;
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    post.title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 150,
+                    child: SingleChildScrollView(
+                      child: HtmlWidget(post.content),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PlaceholderBlogPage(),
+                          ),
+                        );
+                      },
+                      child: const Text('Continue Reading'),
+                    ),
+                  )
+                ],
+              ),
+
+            ),
+          );
         }
       },
     );
