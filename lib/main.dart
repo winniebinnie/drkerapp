@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:drkerapp/pages/explore/explore_page.dart';
-import 'package:drkerapp/pages/read/read_page.dart';       // <-- add this
-import 'package:drkerapp/pages/search/search_page.dart';     // <-- add this
+import 'package:drkerapp/pages/read/read_page.dart';
+import 'package:drkerapp/pages/search/search_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,11 +17,34 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'DrKer Ministry',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        fontFamily: GoogleFonts.notoSansThai().fontFamily,
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFFF7F8FD),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        textTheme: TextTheme(
+          bodyMedium: TextStyle(
+            fontSize: 14,
+            color: const Color(0xFF1F2024),
+            fontFamily: GoogleFonts.notoSansThai().fontFamily,
+          ),
+          titleMedium: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            fontFamily: GoogleFonts.notoSansThai().fontFamily,
+          ),
+        ),
       ),
-      home: const HomePage(), // 👈 switch this to HomePage
+      darkTheme: ThemeData.dark().copyWith(
+        textTheme: TextTheme(
+          bodyMedium: TextStyle(
+            fontSize: 14,
+            color: Colors.white70,
+            fontFamily: GoogleFonts.notoSansThai().fontFamily,
+          ),
+        ),
+      ),
+      themeMode: ThemeMode.system,
+      home: const HomePage(),
     );
   }
 }
