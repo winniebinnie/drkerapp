@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:drkerapp/models/video_item.dart';
 import 'package:drkerapp/services/youtube_service.dart';
 import 'package:drkerapp/utility/constants.dart';
-import 'package:drkerapp/widgets/video_card.dart';
 import 'package:drkerapp/widgets/horizontal_card_list.dart';
+import 'package:drkerapp/widgets/animated_video_card.dart';
 
 class LibrarySection extends StatelessWidget {
   const LibrarySection({super.key});
@@ -25,7 +25,7 @@ class LibrarySection extends StatelessWidget {
           );
         } else {
           final cards = snapshot.data!
-              .map((video) => VideoCard(title: video.title, imageUrl: video.thumbnailUrl))
+              .map((video) => AnimatedVideoCard(video: video))
               .toList();
           return HorizontalCardList(title: 'DrKerLibrary', cards: cards);
         }
