@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:drkerapp/models/blog_item.dart';
+import 'package:html_unescape/html_unescape.dart';
 
 class BlogService {
   // Fetch latest blog posts
@@ -14,11 +15,12 @@ class BlogService {
     if (response.statusCode == 200) {
       final List data = jsonDecode(response.body);
       final item = data.first;
+      final unescape = HtmlUnescape();
 
       return BlogItem(
-        title: item['title']['rendered'],
+        title: unescape.convert(item['title']['rendered']),
         link: item['link'],
-        content: item['content']['rendered'],
+        content: unescape.convert(item['content']['rendered']),
       );
     } else {
       throw Exception('Failed to fetch latest blog post');

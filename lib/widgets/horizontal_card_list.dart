@@ -3,8 +3,14 @@ import 'package:flutter/material.dart';
 class HorizontalCardList extends StatelessWidget {
   final String title;
   final List<Widget> cards;
+  final VoidCallback? onSeeMore;
 
-  const HorizontalCardList({required this.title, required this.cards, super.key});
+  const HorizontalCardList({
+    required this.title,
+    required this.cards,
+    this.onSeeMore,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +32,16 @@ class HorizontalCardList extends StatelessWidget {
                     color: Color(0xFF1F2024),
                   ),
                 ),
-                const Text(
-                  'See more',
-                  style: TextStyle(color: Color(0xFF006FFD), fontSize: 12, fontWeight: FontWeight.w600),
+                GestureDetector(
+                  onTap: onSeeMore,
+                  child: const Text(
+                    'See more',
+                    style: TextStyle(
+                      color: Color(0xFF006FFD),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
             ),
