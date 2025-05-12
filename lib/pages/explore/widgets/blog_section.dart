@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:drkerapp/pages/read/placeholder_blog_page.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
-
-
 class BlogSection extends StatelessWidget {
   const BlogSection({super.key});
 
@@ -27,9 +25,8 @@ class BlogSection extends StatelessWidget {
         } else {
           final post = snapshot.data!;
           return Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Container(
-              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(12),
@@ -44,38 +41,66 @@ class BlogSection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    post.title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  // Title with consistent side padding
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 16,
+                      left: 16,
+                      right: 16,
+                      bottom: 0,
+                    ),
+                    child: Text(
+                      post.title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
+
+                  // Content: full-width, top padding, internal padding for colored containers
                   SizedBox(
                     height: 150,
                     child: SingleChildScrollView(
-                      child: HtmlWidget(post.content),
+                      child: HtmlWidget(
+                        post.content,
+                        customWidgetBuilder: (element) {
+                          final hasBackground = element.attributes['style']?.contains('background') ?? false;
+                          if ((element.localName == 'div' || element.localName == 'section') && hasBackground) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12.0),
+                              child: HtmlWidget(element.innerHtml),
+                            );
+                          }
+                          return null;
+                        },
+                      )
+
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const PlaceholderBlogPage(),
-                          ),
-                        );
-                      },
-                      child: const Text('Continue Reading'),
+
+                  // Button tight to the right
+                  Padding(
+                    padding: const EdgeInsets.only(right: 0.0, bottom: 12),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PlaceholderBlogPage(),
+                            ),
+                          );
+                        },
+                        child: const Text('Continue Reading'),
+                      ),
                     ),
-                  )
+                  ),
                 ],
               ),
-
             ),
           );
         }
