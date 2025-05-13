@@ -34,16 +34,6 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      darkTheme: ThemeData.dark().copyWith(
-        textTheme: TextTheme(
-          bodyMedium: TextStyle(
-            fontSize: 14,
-            color: Colors.white70,
-            fontFamily: GoogleFonts.notoSansThai().fontFamily,
-          ),
-        ),
-      ),
-      themeMode: ThemeMode.system,
       home: const HomePage(),
     );
   }
