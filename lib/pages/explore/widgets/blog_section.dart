@@ -1,7 +1,7 @@
 import 'package:drkerapp/models/blog_item.dart';
 import 'package:drkerapp/services/blog_service.dart';
 import 'package:flutter/material.dart';
-import 'package:drkerapp/pages/read/placeholder_blog_page.dart';
+import 'package:drkerapp/pages/read/blog_detail_page.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 class BlogSection extends StatelessWidget {
@@ -91,7 +91,7 @@ class BlogSection extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const PlaceholderBlogPage(),
+                              builder: (context) => BlogDetailPage(post: post),
                             ),
                           );
                         },
