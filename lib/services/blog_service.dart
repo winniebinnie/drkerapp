@@ -53,4 +53,27 @@ class BlogService {
       throw Exception('Failed to fetch blog posts');
     }
   }
+
+  // Fetch blog posts by category ID
+  static Future<List<BlogItem>> fetchPostsByCategory(int categoryId) async {
+    final url = Uri.parse(
+      'https://public-api.wordpress.com/wp/v2/sites/drkerministry.home.blog/posts?categories=$categoryId',
+    );
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map<BlogItem>((item) {
+        return BlogItem(
+          title: item['title']['rendered'],
+          link: item['link'],
+          content: item['content']['rendered'],
+        );
+      }).toList();
+    } else {
+      throw Exception('Failed to fetch posts by category');
+    }
+  }
+
 }
