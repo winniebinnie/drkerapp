@@ -34,16 +34,6 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      darkTheme: ThemeData.dark().copyWith(
-        textTheme: TextTheme(
-          bodyMedium: TextStyle(
-            fontSize: 14,
-            color: Colors.white70,
-            fontFamily: GoogleFonts.notoSansThai().fontFamily,
-          ),
-        ),
-      ),
-      themeMode: ThemeMode.system,
       home: const HomePage(),
     );
   }
@@ -59,18 +49,23 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const ExplorePage(),
+  final List<Widget> _screens = const [
+    ExplorePage(),
     ReadPage(),
-    const SearchPage(),
-    const Center(child: Text('Search Page')), // Placeholder
-    const Center(child: Text('Profile Page')), // Placeholder
+    SearchPage(),
+    Center(child: Text('Search Page')), // Replace with actual page
+    Center(child: Text('Profile Page')), // Replace with actual page
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: _screens[_currentIndex]),
+      body: SafeArea(
+        child: IndexedStack(
+          index: _currentIndex,
+          children: _screens,
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         selectedItemColor: const Color(0xFF006FFD),
