@@ -12,8 +12,10 @@ class BlogDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(post.title)),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: HtmlWidget(post.content),
+        child: HtmlWidget(
+          post.content,
+          textStyle: TextStyle(fontSize: 18), // Adjust font size here
+        ),
       ),
     );
   }
