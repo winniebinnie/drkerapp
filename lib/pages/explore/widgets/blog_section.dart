@@ -81,12 +81,12 @@ class BlogSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  // Button tight to the right
+                  // Button to continue reading
                   Padding(
-                    padding: const EdgeInsets.only(right: 0.0, bottom: 12),
+                    padding: const EdgeInsets.only(right: 16.0, bottom: 3),
                     child: Align(
                       alignment: Alignment.centerRight,
-                      child: ElevatedButton(
+                      child: TextButton.icon(
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -95,10 +95,20 @@ class BlogSection extends StatelessWidget {
                             ),
                           );
                         },
-                        child: const Text('Continue Reading'),
+                        icon: const Icon(Icons.arrow_forward, size: 18, color: Color(0xFF006FFD)),
+                        label: const Text(
+                          'อ่านต่อ',
+                          style: TextStyle(
+                            color: Color(0xFF006FFD),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                     ),
                   ),
+
+
+
                 ],
               ),
             ),
