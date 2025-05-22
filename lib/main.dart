@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:drkerapp/pages/explore/explore_page.dart';
 import 'package:drkerapp/pages/read/read_page.dart';
-import 'package:drkerapp/pages/search/search_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -52,8 +51,6 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _screens = const [
     ExplorePage(),
     ReadPage(),
-    SearchPage(),
-    Center(child: Text('Search Page')), // Replace with actual page
     Center(child: Text('Profile Page')), // Replace with actual page
   ];
 
@@ -79,7 +76,6 @@ class _HomePageState extends State<HomePage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
           BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Read'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),

@@ -12,14 +12,16 @@ class TopBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: GestureDetector(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
               onTap: () {
                 showSearch(context: context, delegate: DrKerSearchDelegate());
               },
               child: Container(
+                height: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
@@ -29,14 +31,13 @@ class TopBar extends StatelessWidget {
                     ),
                   ],
                 ),
-                height: 40,
                 child: Row(
-                  children: const [
-                    Icon(Icons.search, color: Colors.grey),
-                    SizedBox(width: 8),
+                  children: [
+                    Icon(Icons.search, color: Colors.grey.shade600),
+                    const SizedBox(width: 8),
                     Text(
                       'ค้นหา...',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
                     ),
                   ],
                 ),
@@ -46,7 +47,10 @@ class TopBar extends StatelessWidget {
           const SizedBox(width: 12),
           IconButton(
             icon: const Icon(Icons.menu),
-            onPressed: () => print("Menu icon tapped"),
+            onPressed: () {
+              // Replace this with real functionality
+              Scaffold.of(context).openDrawer(); // if using drawer
+            },
           ),
         ],
       ),
